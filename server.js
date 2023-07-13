@@ -3,12 +3,17 @@ const dotenv = require('dotenv')
 dotenv.config()
 require("./db")
 
+const bodyParser = require("body-parser")
+
 const app = express()
 
 const userRoute = require('./route/user-route')
 
-app.use('/api', userRoute)
 
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
+
+app.use('/api', userRoute)
 app.listen(process.env.PORT, (err) => {
 
     if (err) {

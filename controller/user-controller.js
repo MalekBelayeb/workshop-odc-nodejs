@@ -1,10 +1,20 @@
 
+const User = require('../model/user-model')
 
-const login = (req, res) => {
+const login = async (req, res) => {
 
     try {
+        //let user = awai user.findOne()
+        let { email, password } = req.body
+        let userExist = await User.findOne({ email })
+        if (!userExist) return res.status(404).send({ success: true, message: "email not exist" })
 
-        return res.status(200).send({ success: true, message: "login user" })
+
+        if (userExist.password == password) {
+            return res.status(200).send({ success: true, message: "login user" })
+
+        }
+        else { return res.status(200).send({ success: false, message: "wrong password " }) }
 
     } catch (err) {
         console.log(err)
@@ -14,10 +24,19 @@ const login = (req, res) => {
 
 }
 
-
-const register = (req, res) => {
+const register = async (req, res) => {
 
     try {
+
+        let { email, firstname, lastname, password } = req.body
+
+        let userExist = await User.findOne({ email })
+
+        if (userExist) return res.status(404).send({ success: false, message: "email already exists" })
+
+        let user = new User({ email, firstname, lastname, password })
+
+        await user.save()
 
         return res.status(200).send({ success: true, message: "register user" })
 
@@ -29,8 +48,5 @@ const register = (req, res) => {
     }
 
 }
-
-
-
 
 module.exports = { login, register }
