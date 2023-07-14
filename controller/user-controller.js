@@ -1,4 +1,6 @@
-const bcr=require("bcrypt")
+const bcrypt = require("bcrypt")
+const jwt = require("jsonwebtoken")
+
 const User = require('../model/user-model')
 
 const login = async (req, res) => {
@@ -8,10 +10,15 @@ const login = async (req, res) => {
         let { email, password } = req.body
         let userExist = await User.findOne({ email })
         if (!userExist) return res.status(404).send({ success: true, message: "email not exist" })
-       
-     
-        if (await  bcr.compare(password,userExist.password)) {
-            return res.status(200).send({ success: true, message: "login user" })
+
+
+        if (await bcrypt.compare(password, userExist.password)) {
+
+            delete userExist._doc.password
+
+            let token = jwt.sign({ iduser: userExist._id }, "secretKey")
+
+            return res.status(200).send({ success: true, message: "login user", token, user: userExist })
 
         }
         else { return res.status(200).send({ success: false, message: "wrong password " }) }
@@ -36,12 +43,14 @@ const register = async (req, res) => {
         if (userExist) return res.status(404).send({ success: false, message: "email already exists" })
 
         let user = new User({ email, firstname, lastname, password })
-     const hashPass=await bcr.hash(user.password,10)
-     user.password=hashPass
+        const hashPass = await bcrypt.hash(user.password, 10)
+        user.password = hashPass
 
-        await user.save()
+        let newUser = await user.save()
 
-        return res.status(200).send({ success: true, message: "register user" })
+        delete newUser._doc.password
+
+        return res.status(200).send({ success: true, message: "register user", user: newUser })
 
     } catch (err) {
 
@@ -50,6 +59,43 @@ const register = async (req, res) => {
 
     }
 
+
+
 }
 
-module.exports = { login, register }
+const getUsers = async (req, res)  => {
+
+    try {
+        console.log(req.idUser)
+        //get all users 
+        let users = await User.find()
+        res.status(200).send ( {
+
+            success : true,
+            users
+
+        }
+
+
+        )
+
+        
+        
+    } catch (error) {
+        console.log(error)
+        res.status(404).send({
+          
+            success : false,
+            error 
+
+        })
+    }
+
+
+    
+
+
+
+} 
+
+module.exports = { login, register,getUsers}

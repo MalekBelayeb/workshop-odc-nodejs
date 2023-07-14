@@ -1,5 +1,6 @@
 const express = require('express')
 const dotenv = require('dotenv')
+const morgan = require("morgan")
 dotenv.config()
 require("./db")
 
@@ -9,11 +10,12 @@ const app = express()
 
 const userRoute = require('./route/user-route')
 
-
+app.use(morgan('tiny'))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
 app.use('/api', userRoute)
+
 app.listen(process.env.PORT, (err) => {
 
     if (err) {
