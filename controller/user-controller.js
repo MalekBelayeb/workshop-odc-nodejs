@@ -1,4 +1,4 @@
-
+const bcr=require("bcrypt")
 const User = require('../model/user-model')
 
 const login = async (req, res) => {
@@ -8,15 +8,16 @@ const login = async (req, res) => {
         let { email, password } = req.body
         let userExist = await User.findOne({ email })
         if (!userExist) return res.status(404).send({ success: true, message: "email not exist" })
-
-
-        if (userExist.password == password) {
+       
+     
+        if (await  bcr.compare(password,userExist.password)) {
             return res.status(200).send({ success: true, message: "login user" })
 
         }
         else { return res.status(200).send({ success: false, message: "wrong password " }) }
 
     } catch (err) {
+
         console.log(err)
         return res.status(404).send({ success: true, message: err })
 
@@ -35,6 +36,8 @@ const register = async (req, res) => {
         if (userExist) return res.status(404).send({ success: false, message: "email already exists" })
 
         let user = new User({ email, firstname, lastname, password })
+     const hashPass=await bcr.hash(user.password,10)
+     user.password=hashPass
 
         await user.save()
 
