@@ -66,7 +66,10 @@ const register = async (req, res) => {
 const getUsers = async (req, res)  => {
 
     try {
+
+
         console.log(req.idUser)
+        
         //get all users 
         let users = await User.find()
         res.status(200).send ( {
